@@ -5,7 +5,6 @@ namespace SimpleSoftwareIO\SMS\Drivers;
 use Services_Twilio;
 use SimpleSoftwareIO\SMS\OutgoingMessage;
 
-
 class TwilioSMS extends AbstractSMS implements DriverInterface
 {
     /**
