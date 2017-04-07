@@ -4,7 +4,7 @@ namespace SimpleSoftwareIO\SMS\Http\Controllers;
 use App\Http\Controllers\Controller;
 use SimpleSoftwareIO\SMS\Facades\SMS;
 
-class DoSmsController extends Controller
+class SmsController extends Controller
 {
     public function index()
     {
