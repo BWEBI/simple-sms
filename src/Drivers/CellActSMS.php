@@ -173,7 +173,7 @@ class CellActSMS extends AbstractSMS implements DriverInterface
 // here starts BWEBI functions
 
 
-	public function startsms()
+	public function index()
 	{
 		// need to create variables from information for the array just for testing to make sure it all works
 		// validate works with this array NOT the array created for the XML
