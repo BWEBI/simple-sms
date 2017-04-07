@@ -2,6 +2,8 @@
 
 namespace SimpleSoftwareIO\SMS;
 
+use SimpleSoftwareIO\SMS\Drivers\AbstractSMS;
+
 trait MakesRequests
 {
     /**

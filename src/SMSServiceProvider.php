@@ -21,6 +21,7 @@ class SMSServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/config/sms.php' => config_path('sms.php'),
         ]);
+	    $this->handleRoutes();
     }
 
     /**
@@ -73,4 +74,8 @@ class SMSServiceProvider extends ServiceProvider
     {
         return ['sms', 'sms.sender'];
     }
+
+	private function handleRoutes() {
+		$this->loadRoutesFrom(__DIR__.'/../routes.php');
+	}
 }

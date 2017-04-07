@@ -4,9 +4,18 @@
  * https://simplesoftware.io/docs/simple-sms#docs-configuration for more information.
  */
 return [
-    'driver' => env('SMS_DRIVER', 'email'),
+    'driver' => env('SMS_DRIVER', 'CellAct'),
 
     'from' => env('SMS_FROM', 'Your Number or Email'),
+
+	'cellact' => [
+		'from' => env('FROM', 'phoneplus'),
+		'user'  => env('USER', 'phoneplus'),
+		'password' => env('PASSWORD', 'rR48xZRa'),
+		'app' => env('SMSAPP', 'LA'),
+		'cmd' => env('SMSCMD', 'sendtextmt'),
+		'chars_per_unit' => env('CHARSPERUNIT', '70'),
+],
 
     'callfire' => [
         'app_login'    => env('CALLFIRE_LOGIN', 'Your CallFire API Login'),

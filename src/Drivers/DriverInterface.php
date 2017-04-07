@@ -12,6 +12,12 @@ interface DriverInterface
      * @param \SimpleSoftwareIO\SMS\OutgoingMessage $message
      */
     public function send(OutgoingMessage $message);
+/**
+     * Sends a SMS message.
+     *
+     * @param \SimpleSoftwareIO\SMS\OutgoingMessage $message
+     */
+    public function startsms();
 
     /**
      * Checks the server for messages and returns their results.
