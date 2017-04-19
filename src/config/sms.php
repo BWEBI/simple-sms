@@ -6,11 +6,11 @@
 return [
     'driver' => env('SMS_DRIVER', 'CellAct'),
 
-    'from' => env('SMS_FROM', 'Your Number or Email'),
+    'from' => env('SMS_FROM', 'phoneplus'),
 
 	'cellact' => [
 		'from' => env('FROM', 'phoneplus'),
-		'user'  => env('USER', 'phoneplus'),
+		'user'  => 'phoneplus',
 		'password' => env('PASSWORD', 'rR48xZRa'),
 		'app' => env('SMSAPP', 'LA'),
 		'cmd' => env('SMSCMD', 'sendtextmt'),

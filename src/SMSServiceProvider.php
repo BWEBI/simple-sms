@@ -21,6 +21,7 @@ class SMSServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/config/sms.php' => config_path('sms.php'),
         ]);
+        $this->handleMigrations();
 	    $this->handleRoutes();
     }
 
@@ -73,6 +74,10 @@ class SMSServiceProvider extends ServiceProvider
     public function provides()
     {
         return ['sms', 'sms.sender'];
+    }
+
+    private function handleMigrations() {
+        $this->loadMigrationsFrom(__DIR__.'/Database/Migrations');
     }
 
 	private function handleRoutes() {

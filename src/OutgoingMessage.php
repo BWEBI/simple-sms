@@ -111,10 +111,19 @@ class OutgoingMessage
      */
     public function to($number, $carrier = null)
     {
-        $this->to[] = [
-            'number'  => $number,
-            'carrier' => $carrier,
-        ];
+        if (is_array($number)){
+            foreach ($number as $to) {
+                $this->to[] = [
+                    'number'  => $to,
+                    'carrier' => $carrier,
+                ];
+            }
+        } else {
+            $this->to[] = [
+                'number'  => $number,
+                'carrier' => $carrier,
+            ];
+        }
 
         return $this;
     }
@@ -182,6 +191,19 @@ class OutgoingMessage
     public function getData()
     {
         return $this->data;
+    }
+
+    /**
+     * Returns the extra data if exist from request.
+     *
+     * @return array
+     */
+    public function getExtraData()
+    {
+        if (!isset($this->data['extra_data']))
+            return null;
+
+        return $this->data['extra_data'];
     }
 
     /**

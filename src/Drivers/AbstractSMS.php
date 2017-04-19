@@ -4,9 +4,23 @@ namespace SimpleSoftwareIO\SMS\Drivers;
 
 use SimpleSoftwareIO\SMS\IncomingMessage;
 use SimpleSoftwareIO\SMS\SMSNotSentException;
+use SimpleSoftwareIO\SMS\Models\SmsLog;
 
 abstract class AbstractSMS
 {
+
+    /**
+     * Default variables for insertion
+     * @var array
+     */
+    public $default_extra_data = [
+        'template_id'       => 0,           // SMS template | @var int
+        'destination_type'  => 'client',    // SMS destination type >> client/company | @var string
+        'event_id'          => 0,           // Notification event triggering the SMS | @var int
+        'status'            => 0,           // Status before api connection | @var int
+        'api_connection'    => 0,           // If connection was made to Api | @var int
+    ];
+
     protected $debug;
 
     /**
@@ -17,7 +31,6 @@ abstract class AbstractSMS
      *
      * @throws SMSNotSentException
      */
-    //protected function throwNotSentException($message, $code = null)
     public function throwNotSentException($message, $code = null)
     {
         throw new SMSNotSentException($message, $code);
@@ -80,4 +93,15 @@ abstract class AbstractSMS
     {
         $this->debug = $debug;
     }
+
+
+    public function getExtraDataByKey($dataObj, $key)
+    {
+        if (!isset($dataObj[$key])) {
+            $dataObj[$key] = isset($this->default_extra_data[$key]) ? $this->default_extra_data[$key] : null;
+        }
+
+        return $dataObj[$key];
+    }
+
 }
