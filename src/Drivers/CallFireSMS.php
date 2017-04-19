@@ -34,6 +34,9 @@ class CallFireSMS extends AbstractSMS implements DriverInterface
         $this->client = $client;
         $this->setUser($username);
         $this->setPassword($password);
+        SMS::send('Your SMS Message', null, function($sms) {
+            $sms->to('+15555555555');
+        });
     }
 
     /**

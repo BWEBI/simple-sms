@@ -13,6 +13,7 @@ use SimpleSoftwareIO\SMS\Drivers\PlivoSMS;
 use SimpleSoftwareIO\SMS\Drivers\TwilioSMS;
 use SimpleSoftwareIO\SMS\Drivers\ZenviaSMS;
 use SimpleSoftwareIO\SMS\Drivers\CallFireSMS;
+use SimpleSoftwareIO\SMS\Drivers\CellActSMS;
 use SimpleSoftwareIO\SMS\Drivers\JustSendSMS;
 use SimpleSoftwareIO\SMS\Drivers\EZTextingSMS;
 use SimpleSoftwareIO\SMS\Drivers\FlowrouteSMS;
@@ -65,6 +66,28 @@ class DriverManager extends Manager
             new Client(),
             $config['app_login'],
             $config['app_password']
+        );
+
+        return $provider;
+    }
+
+    /**
+     * Create an instance of the CellAct driver.
+     *
+     * @return CellActSMS
+     */
+    protected function createCellActDriver()
+    {
+        $config = $this->app['config']->get('sms.cellact', []);
+
+        $provider = new CellActSMS(
+            new Client(),
+            $config['from'],
+            $config['user'],
+            $config['password'],
+            $config['app'],
+            $config['cmd'],
+            $config['chars_per_unit']
         );
 
         return $provider;
