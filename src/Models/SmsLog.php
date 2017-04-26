@@ -18,7 +18,7 @@ class SmsLog extends Model
 	{
 		DB::table('sms_notifications')
 			->where('id', $id)
-			->update(['status' => $dataArrUpdate['status'], 'code_key' => $dataArrUpdate['session']]);
+			->update($dataArrUpdate);
 		return $id;
 	}
 

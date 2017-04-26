@@ -145,5 +145,18 @@ class Array2XML {
 		$pattern = '/^[a-z_]+[a-z0-9\:\-\.\_]*[^:]*$/i';
 		return preg_match($pattern, $tag, $matches) && $matches[0] == $tag;
 	}
+
+	/**
+	 * Convert xml to JSON >> Array
+	 * @param $xmlData
+	 * @return Array
+	 */
+	static function XMLtoJSON($xmlData)
+	{
+		$xml = simplexml_load_string($xmlData);
+		$json = json_encode($xml);
+		return json_decode($json, TRUE);
+	}
+
 }
 ?>

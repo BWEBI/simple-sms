@@ -82,9 +82,9 @@ class SMS
 
         call_user_func($callback, $message);
 
-        $this->driver->send($message);
+        return $this->driver->send($message);
 
-        return $message;
+        // return $message; // original package response
     }
 
     /**

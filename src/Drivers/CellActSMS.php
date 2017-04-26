@@ -24,18 +24,10 @@ class CellActSMS extends AbstractSMS implements DriverInterface
     public $provider = 'CellAct';
 
     public $rules = [
-        'smsFrom' => 'required',
-        'smsUser' => 'required',
-        'smsPW' => 'required',
-        'smsApp' => 'required',
-        'smsCMD' => 'required',
-        'smsTTS' => 'nullable',
-        'smsTTL' => 'nullable',
-        'smsSender' => 'nullable',
-        'smsContent' => 'required',
-        'smsTo' => 'required',
-        'smsMsgId' => 'nullable',
-        'smsService' => 'nullable',
+        'from_id' => 'required|integer',
+        'from_name' => 'required',
+        'to_phone' => 'required',
+        'message' => 'required'
     ];
 
     use MakesRequests;
@@ -78,6 +70,7 @@ class CellActSMS extends AbstractSMS implements DriverInterface
      * Sends a SMS message.
      *
      * @param \SimpleSoftwareIO\SMS\OutgoingMessage $message
+     * @return array|bool
      */
     public function send(OutgoingMessage $message)
     {
@@ -101,11 +94,23 @@ class CellActSMS extends AbstractSMS implements DriverInterface
 
             $this->buildBody($data);
 
+            // Check for request validation errors
+            if ($this->hasErrors()) {
+                return $this->hasErrors();
+            }
+
+            // Insert to DB before Api call
             $id = $this->doInsert();
+            if (!$id){
+                return self::handleResponse(0, 'Failed to insert Data');
+            }
 
+            // Generate the message and make the Api call
             $api_data = $this->generateMessageBody($id);
+            $api_result = $this->makeCall($this->buildUrl(), $api_data);
 
-            $this->makeCall($this->buildUrl(), $api_data);
+            // Format the Api response and update DB
+            return $this->handleApiResult($id, $api_result);
         }
     }
 
@@ -185,76 +190,6 @@ class CellActSMS extends AbstractSMS implements DriverInterface
         return $incomingMessage;
     }
 
-    /**
-     * Calculate SMS units based on the driver config parameter
-     * (function could be moved to OutgoingMessage class)
-     * @param $messageText
-     * @return float|int
-     */
-    public function calculateMessageUnits()
-    {
-        $units = !empty($this->getBody()['message']) ? ceil(strlen($this->getBody()['message']) / $this->config['chars_per_unit']) : 0;
-
-        return (int)$units;
-    }
-
-// here starts BWEBI functions
-
-
-    public function index()
-    {
-        // need to create variables from information for the array just for testing to make sure it all works
-        // validate works with this array NOT the array created for the XML
-        $smsParams = $this->getSmsParams();
-
-        $this->sms_data = $this->orderArray($smsParams);
-        $this->smsParams = $smsParams;
-        $this->smsSendTo = explode(',', $smsParams['smsTo']);
-        $this->allResponses = [];
-
-        //validate entire model
-        $valid = new ValidModel($this->smsParams, $this->rules);
-        if ($valid->hasErrors()) {
-            $responseArr = Array('success' => 0, 'msg' => $valid->getErrors());
-            return $responseArr;
-        }
-        foreach ($this->smsSendTo as $key => $value) {
-
-            $this->smsParams['smsTo'] = $value;
-
-            // Prepare and insert initial sms data
-            $id = $this->doInsert();
-            if ($id) {
-                $this->sms_data['BODY']['DEST_LIST']['TO'] = $this->smsParams['smsTo'];
-                // Send sms request to Api
-                $apiFullResult = Array2XML::createXML('PALO', $this->sms_data)->saveXML();
-
-
-                //return $this->makeCall($url, $xml->saveXML());
-                $apiTFresult = $this->XMLtoJSON($apiFullResult);
-                if ($apiTFresult['RESULT'] === "True") {
-                    // Update inserted sms with Api results
-                    $this->doUpdate($id, $apiFullResult);
-                    $responseArr = Array('success' => 1, 'id' => $id);
-                } else {
-                    $responseArr = Array('success' => 0, 'msg' => 'Error Reported From Company On Attempt To Send');
-                }
-                //build array of possible multiple responses
-                $this->allResponses[] = $responseArr;
-            }
-        }
-        return json_encode($this->allResponses);
-        //return json_encode($responseArr);
-    }
-
-    public function doUpdate($id, $res)
-    {
-        $JSONfromXML = $this->XMLtoJSON($res);
-        $dataArr['status'] = ($JSONfromXML['RESULT'] === 'True') ? '1' : '0';
-        $dataArr['session'] = ($dataArr['status'] === '1') ? $JSONfromXML['SESSION'] : "";        //Check if any valid keys should be pulled out from the Api response
-        return SmsLog::updateSmsStatus($id, $dataArr);
-    }
-
     public function doInsert()
     {
 
@@ -264,25 +199,35 @@ class CellActSMS extends AbstractSMS implements DriverInterface
         return SmsLog::insertSmsNotify($dataArr);
     }
 
-    public function getSmsParams()
+    /**
+     * Calculate SMS units based on the driver config parameter
+     * (function could be moved to OutgoingMessage class)
+     * @return int
+     */
+    public function calculateMessageUnits()
     {
-        return [
-            'smsFrom' => $this->config['from'],
-            'smsUser' => $this->config['user'],
-            'smsPW' => $this->config['password'],
-            'smsApp' => $this->config['app'],
-            'smsCMD' => $this->config['cmd'],
-            'smsTTS' => '90',
-            'smsTTL' => '180',
-            'smsSender' => '',
-            'smsContent' => 'This is an example text message sent through Cellact for Phoneplus',
-            'smsTo' => '052-8623326,052862332,0523768198',
-            //'smsMsgId' => '8772365',
-            //'smsService' => 'phoneplus',
-        ];
+        $units = !empty($this->getBody()['message']) ? ceil(strlen($this->getBody()['message']) / $this->config['chars_per_unit']) : 0;
 
+        return (int)$units;
     }
 
+    public function handleApiResult($id, $res)
+    {
+        // Format api response
+        $responseArr = Array2XML::XMLtoJSON($res);
+        $dataArr['status'] = ($responseArr['RESULT'] === 'True') ? '1' : '0';
+        $dataArr['code_key'] = ($dataArr['status'] === '1') ? $responseArr['SESSION'] : '';
+        $dataArr['api_connection'] = '1';
+
+        // Update DB with Api response
+        SmsLog::updateSmsStatus($id, $dataArr);
+
+        if ($dataArr['status']) {
+            return self::handleResponse(1, null, $id);
+        } else {
+            return self::handleResponse(0, 'Failed to send SMS');
+        }
+    }
 
     public function generateMessageBody($msgID = 0, $sender = null)
     {
@@ -318,13 +263,6 @@ class CellActSMS extends AbstractSMS implements DriverInterface
         return $msg_body;
     }
 
-    public function XMLtoJSON($xmlData)
-    {
-        $xml = simplexml_load_string($xmlData);
-        $json = json_encode($xml);
-        return json_decode($json, TRUE);
-    }
-
     public function makeCall($url, $XMLString)
     {
         //For Post XML
@@ -345,12 +283,44 @@ class CellActSMS extends AbstractSMS implements DriverInterface
         // Check if any error occurred
         if (!curl_errno($curl)) {
             $info = curl_getinfo($curl);
-            dd($server_output);
             if ((int)$info['http_code'] == 200) {
-                curl_close($curl);
-                return $server_output;
+                //
             }
         }
+
         curl_close($curl);
+
+        return $server_output;
     }
+
+    /**
+     * Validate request
+     * @return array|bool
+     */
+    protected function hasErrors()
+    {
+        $valid = new ValidModel($this->getBody(), $this->rules);
+
+        if ($valid->hasErrors()) {
+            return self::handleResponse(0, $valid->getErrors());
+        }
+
+        return false;
+
+    }
+
+    /**
+     * @param int $success
+     * @param null $msg
+     * @param null $data
+     * @return array
+     */
+    static function handleResponse($success=1, $msg=null, $data=null)
+    {
+        $responseArr = Array('success' => $success, 'msg' => $msg, 'data' => $data);
+
+        return $responseArr;
+
+    }
+
 }

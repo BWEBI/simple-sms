@@ -16,8 +16,9 @@ class SmsController extends Controller
             ]
         ];
 
-        SMS::send('Your SMS Message', $extraData, function($sms) {
+        $sent = SMS::send('Your SMS Message', $extraData, function($sms) {
             $sms->to(['0523768198','052-3768198']);
         });
+        dd($sent);
     }
 }
