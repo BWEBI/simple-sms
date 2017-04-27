@@ -123,12 +123,7 @@ class CellActSMS extends AbstractSMS implements DriverInterface
      */
     public function checkMessages(array $options = [])
     {
-        $this->buildCall('/incoming-messages');
-        $this->buildBody($options);
-
-        $rawMessages = $this->getRequest()->json();
-
-        return $this->makeMessages($rawMessages['Response']['Entries']);
+        // Populate when needed
     }
 
     /**
@@ -140,12 +135,7 @@ class CellActSMS extends AbstractSMS implements DriverInterface
      */
     public function getMessage($messageId)
     {
-        $this->buildCall('/incoming-messages');
-        $this->buildCall('/' . $messageId);
-
-        $rawMessage = $this->getRequest()->json();
-
-        return $this->makeMessage($rawMessage['Response']['Entry']);
+        // Populate when needed
     }
 
     /**
@@ -157,14 +147,7 @@ class CellActSMS extends AbstractSMS implements DriverInterface
      */
     protected function processReceive($rawMessage)
     {
-        $incomingMessage = $this->createIncomingMessage();
-        $incomingMessage->setRaw($rawMessage);
-        $incomingMessage->setFrom($rawMessage['PhoneNumber']);
-        $incomingMessage->setMessage($rawMessage['Message']);
-        $incomingMessage->setId($rawMessage['ID']);
-        $incomingMessage->setTo('313131');
-
-        return $incomingMessage;
+        // Populate when needed
     }
 
     /**
@@ -176,18 +159,7 @@ class CellActSMS extends AbstractSMS implements DriverInterface
      */
     public function receive($raw)
     {
-        //Due to the way EZTexting handles Keyword Submits vs Replys
-        //We must check both values.
-        $from = $raw->get('PhoneNumber') ? $raw->get('PhoneNumber') : $raw->get('from');
-        $message = $raw->get('Message') ? $raw->get('Message') : $raw->get('message');
-
-        $incomingMessage = $this->createIncomingMessage();
-        $incomingMessage->setRaw($raw->get());
-        $incomingMessage->setFrom($from);
-        $incomingMessage->setMessage($message);
-        $incomingMessage->setTo('313131');
-
-        return $incomingMessage;
+        // Populate when needed
     }
 
     public function doInsert()
